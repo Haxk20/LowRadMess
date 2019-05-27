@@ -1,30 +1,40 @@
 //TODO:
 //Encryption
-#include <LoRa.h>
+#include <LoRa.h> // include libraries
+//#define USE_DEBUG //Used for debugging
 #define Bluetooth Serial1
-#define USE_DEBUG
+byte localAddress = 0xBB;     // address of this device
+byte destination = 0xFF;      // destination to send to
+
 void setup() {
-  Bluetooth.begin(9600);
-  #ifdef USE_DEBUG
-  Serial.begin(9600);
-  #endif
-  Bluetooth.println("Welcome to LowRadMess");
 #ifdef USE_DEBUG
-  Serial.println("Welcome to LowRadMess");
+  Serial.begin(9600);  // initialize serial
 #endif
-  if (!LoRa.begin(866E6)) {
-    Bluetooth.println("LORA::ERROR >> 404");
+  Bluetooth.begin(9600);
+
+
+  while (!Serial);
+  while (!Bluetooth);
+
+  if (!LoRa.begin(866E6)) {    // initialize radio at 866 MHz
+    
 #ifdef USE_DEBUG
     Serial.println("LORA::ERROR >> 404");
 #endif
-    while (true) {
-      delay(1000);
-    }
+    Bluetooth.println("LORA::ERROR >> 404");
+
+    
+    while (true); // if failed, do nothing
   }
+
+  
+#ifdef USE_DEBUG
+  Serial.println("Welcome to LowRadMess");
+#endif
+  Bluetooth.println("Welcome to LowRadMess");
 }
 
 void loop() {
-  // is bluetooth port ready for reading
   if (Bluetooth.available()) {
     String message = "";
 
@@ -33,31 +43,72 @@ void loop() {
       message += Bluetooth.readString();
     }
 
-    Bluetooth.println("You: " + message);
 #ifdef USE_DEBUG
     Serial.println("You: " + message);
 #endif
-
-    // start packet write to it and close it and reset message
-    LoRa.beginPacket();
-    LoRa.print(message);
-    LoRa.endPacket();
+    Bluetooth.println("You: " + message);
+    
+    sendMessage(message);
   }
 
+  // parse for a packet, and call onReceive with the result:
   onReceive(LoRa.parsePacket());
 }
 
-void onReceive(int packetSize) {
-  if (packetSize == 0) return;
-  String report = "";
-
-  // read message from lora
-  while (LoRa.available()) {
-    report += (char)LoRa.read();
-  }
-#ifdef USE_DEBUG
-  Serial.println("Received: " + report);
-#endif
-  Bluetooth.println("Received: " + report);
+void sendMessage(String outgoing) {
+  LoRa.beginPacket();                   // start packet
+  LoRa.write(destination);              // add destination address
+  LoRa.write(localAddress);             // add sender address
+  LoRa.write(outgoing.length());        // add payload length
+  LoRa.print(outgoing);                 // add payload
+  LoRa.endPacket();                     // finish packet and send it
 }
 
+void onReceive(int packetSize) {
+  if (packetSize == 0) return;          // if there's no packet, return
+
+  // read packet header bytes:
+  int recipient = LoRa.read();          // recipient address
+  byte sender = LoRa.read();            // sender address
+  byte incomingLength = LoRa.read();    // incoming msg length
+  
+  String incoming = "";
+
+  while (LoRa.available()) {
+    incoming += (char)LoRa.read();
+  }
+
+  if (incomingLength != incoming.length()) {   // check length for error
+    
+#ifdef USE_DEBUG
+    Serial.println("error: message length does not match length");
+#endif
+
+    return;                             // skip rest of function
+  }
+
+  // if the recipient isn't this device or broadcast,
+  //Needs much better implementation but it will do for now.
+  if (recipient != localAddress && recipient != 0xFF) {
+    
+#ifdef USE_DEBUG
+    Serial.println("This message is not for me.");
+#endif
+
+    return;                             // skip rest of function
+  }
+
+  // if message is for this device, or broadcast, print details:
+#ifdef USE_DEBUG
+  Serial.println("Received from: 0x" + String(sender, HEX));
+  Serial.println("Sent to: 0x" + String(recipient, HEX));
+  Serial.println("Message length: " + String(incomingLength));
+  Serial.println("Message: " + incoming);
+  Serial.println();
+#endif
+  Bluetooth.println("Received from: 0x" + String(sender, HEX));
+  Bluetooth.println("Sent to: 0x" + String(recipient, HEX));
+  Bluetooth.println("Message length: " + String(incomingLength));
+  Bluetooth.println("Message: " + incoming);
+  Bluetooth.println();
+}
