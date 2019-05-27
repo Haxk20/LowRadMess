@@ -74,6 +74,17 @@ void onReceive(int packetSize) {
   
   String incoming = "";
 
+  // if the recipient isn't this device or broadcast,
+  //Needs much better implementation but it will do for now.
+  if (recipient != localAddress && recipient != 0xFF) {
+    
+#ifdef USE_DEBUG
+    Serial.println("This message is not for me.");
+#endif
+
+    return;                             // skip rest of function
+  }
+
   while (LoRa.available()) {
     incoming += (char)LoRa.read();
   }
@@ -82,17 +93,6 @@ void onReceive(int packetSize) {
     
 #ifdef USE_DEBUG
     Serial.println("error: message length does not match length");
-#endif
-
-    return;                             // skip rest of function
-  }
-
-  // if the recipient isn't this device or broadcast,
-  //Needs much better implementation but it will do for now.
-  if (recipient != localAddress && recipient != 0xFF) {
-    
-#ifdef USE_DEBUG
-    Serial.println("This message is not for me.");
 #endif
 
     return;                             // skip rest of function
