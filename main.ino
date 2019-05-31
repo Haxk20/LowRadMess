@@ -29,7 +29,7 @@ void setup() {
 
 
 #ifdef USE_DEBUG
-  Serial.println("Welcome to LowRadMess");
+  Serial.println("Welcome to LowRadMess (DEBUG)");
 #endif
   Bluetooth.println("Welcome to LowRadMess");
 }
