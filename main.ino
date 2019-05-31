@@ -76,7 +76,7 @@ void onReceive(int packetSize) {
 
   // if the recipient isn't this device or broadcast,
   //Needs much better implementation but it will do for now.
-  if (recipient != localAddress && recipient != 0xFF) {
+  if (recipient != localAddress && recipient != destination) {
 
 #ifdef USE_DEBUG
     Serial.println("This message is not for me.");
