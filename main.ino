@@ -17,17 +17,17 @@ void setup() {
   while (!Bluetooth);
 
   if (!LoRa.begin(866E6)) {    // initialize radio at 866 MHz
-    
+
 #ifdef USE_DEBUG
     Serial.println("LORA::ERROR >> 404");
 #endif
     Bluetooth.println("LORA::ERROR >> 404");
 
-    
+
     while (true); // if failed, do nothing
   }
 
-  
+
 #ifdef USE_DEBUG
   Serial.println("Welcome to LowRadMess");
 #endif
@@ -47,7 +47,7 @@ void loop() {
     Serial.println("You: " + message);
 #endif
     Bluetooth.println("You: " + message);
-    
+
     sendMessage(message);
   }
 
@@ -71,13 +71,13 @@ void onReceive(int packetSize) {
   int recipient = LoRa.read();          // recipient address
   byte sender = LoRa.read();            // sender address
   byte incomingLength = LoRa.read();    // incoming msg length
-  
+
   String incoming = "";
 
   // if the recipient isn't this device or broadcast,
   //Needs much better implementation but it will do for now.
   if (recipient != localAddress && recipient != 0xFF) {
-    
+
 #ifdef USE_DEBUG
     Serial.println("This message is not for me.");
 #endif
@@ -90,7 +90,7 @@ void onReceive(int packetSize) {
   }
 
   if (incomingLength != incoming.length()) {   // check length for error
-    
+
 #ifdef USE_DEBUG
     Serial.println("error: message length does not match length");
 #endif
@@ -106,9 +106,6 @@ void onReceive(int packetSize) {
   Serial.println("Message: " + incoming);
   Serial.println();
 #endif
-  Bluetooth.println("Received from: 0x" + String(sender, HEX));
-  Bluetooth.println("Sent to: 0x" + String(recipient, HEX));
-  Bluetooth.println("Message length: " + String(incomingLength));
   Bluetooth.println("Message: " + incoming);
   Bluetooth.println();
 }
