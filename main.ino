@@ -1,6 +1,6 @@
 //TODO:
 //Encryption
-#include <LoRa.h> // include libraries
+#include <LoRa.h> // include LoRa library
 //#define USE_DEBUG //Used for debugging
 #define Bluetooth Serial1
 byte localAddress = 0xBB;     // address of this device
