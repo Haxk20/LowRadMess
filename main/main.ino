@@ -18,7 +18,7 @@ void setup() {
   while (!Bluetooth);
 #ifdef EXPERIMENTAL
 
-#elif
+#else
   if (!LoRa.begin(866E6)) {    // initialize radio at 866 MHz
 
 #ifdef USE_DEBUG
