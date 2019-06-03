@@ -5,6 +5,7 @@
 #define Bluetooth Serial1
 byte localAddress = 0xBB;     // address of this device
 byte destination = 0xFF;      // destination to send to
+int messageCount = 0;
 
 void setup() {
 #ifdef USE_DEBUG
@@ -42,13 +43,21 @@ void loop() {
     while (Bluetooth.available()) {
       message += Bluetooth.readString();
     }
-
+if (messageCount < 5) { //A very very basic duty cycle limit without sense of time, Will have to rewrited.
 #ifdef USE_DEBUG
     Serial.println("You: " + message);
 #endif
     Bluetooth.println("You: " + message);
 
     sendMessage(message);
+    }
+
+  else {
+    #ifdef USE_DEBUG
+        Serial.println("To honor the duty cycle the limit is 5 messages per day");
+    #endif
+        Bluetooth.println("To honor the duty cycle the limit is 5 messages per day");
+    }
   }
 
   // parse for a packet, and call onReceive with the result:
@@ -62,6 +71,7 @@ void sendMessage(String outgoing) {
   LoRa.write(outgoing.length());        // add payload length
   LoRa.print(outgoing);                 // add payload
   LoRa.endPacket();                     // finish packet and send it
+  messageCount++;
 }
 
 void onReceive(int packetSize) {
