@@ -29,7 +29,7 @@ void setup() {
 
     while (true); // if failed, do nothing
   }
-#endif
+  #endif
 
 #ifdef USE_DEBUG
   Serial.println("Welcome to LowRadMess (DEBUG)");
