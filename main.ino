@@ -16,18 +16,20 @@ void setup() {
 
   while (!Serial);
   while (!Bluetooth);
+#ifdef EXPERIMENTAL
 
+#elif
   if (!LoRa.begin(866E6)) {    // initialize radio at 866 MHz
 
 #ifdef USE_DEBUG
-    Serial.println("LORA::ERROR >> 404");
+    Serial.println("LRM::ERROR >> 404");
 #endif
-    Bluetooth.println("LORA::ERROR >> 404");
+    Bluetooth.println("LRM::ERROR >> 404");
 
 
     while (true); // if failed, do nothing
   }
-
+#endif
 
 #ifdef USE_DEBUG
   Serial.println("Welcome to LowRadMess (DEBUG)");
