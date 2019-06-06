@@ -1,22 +1,27 @@
 //TODO:
 //Encryption
+//Switch to multiple files as this will be a mess in a while.
 #include <LoRa.h> // include LoRa library
 //#define USE_DEBUG //Used for debugging stuff
+//#define EXPERIMENTAL //Use for enabling experimental features that have not been tested properly.
 #define Bluetooth Serial1
 byte localAddress = 0xBB;     // address of this device
 byte destination = 0xFF;      // destination to send to
 int messageCount = 0;
 
 void setup() {
+  #ifndef EXPERIMENTAL
 #ifdef USE_DEBUG
   Serial.begin(9600);  // initialize serial
 #endif
   Bluetooth.begin(9600);
-
+#endif
 
   while (!Serial);
   while (!Bluetooth);
 #ifdef EXPERIMENTAL
+Bluetooth.begin(9600);
+while (!Bluetooth);
 
 #else
   if (!LoRa.begin(866E6)) {    // initialize radio at 866 MHz
@@ -45,7 +50,7 @@ void loop() {
     while (Bluetooth.available()) {
       message += Bluetooth.readString();
     }
-if (messageCount < 5) { //A very very basic duty cycle limit without sense of time, Will have to rewrited.
+if (messageCount < 5) { //A very very basic duty cycle limit without sense of time, Will have to rewrite it but it will do for now.
 #ifdef USE_DEBUG
     Serial.println("You: " + message);
 #endif
@@ -66,19 +71,7 @@ if (messageCount < 5) { //A very very basic duty cycle limit without sense of ti
   onReceive(LoRa.parsePacket());
 }
 
-void sendMessage(String outgoing) {
-  LoRa.beginPacket();                   // start packet
-  LoRa.write(destination);              // add destination address
-  LoRa.write(localAddress);             // add sender address
-  LoRa.write(outgoing.length());        // add payload length
-  LoRa.print(outgoing);                 // add payload
-  LoRa.endPacket();                     // finish packet and send it
-  messageCount++;
-}
-
-void onReceive(int packetSize) {
-  if (packetSize == 0) return;          // if there's no packet, return
-
+void readMessage() {
   // read packet header bytes:
   int recipient = LoRa.read();          // recipient address
   byte sender = LoRa.read();            // sender address
@@ -120,4 +113,20 @@ void onReceive(int packetSize) {
 #endif
   Bluetooth.println("Message: " + incoming);
   Bluetooth.println();
+}
+
+void sendMessage(String outgoing) {
+  LoRa.beginPacket();                   // start packet
+  LoRa.write(destination);              // add destination address
+  LoRa.write(localAddress);             // add sender address
+  LoRa.write(outgoing.length());        // add payload length
+  LoRa.print(outgoing);                 // add payload
+  LoRa.endPacket();                     // finish packet and send it
+  messageCount++;
+}
+
+void onReceive(int packetSize) {
+  if (packetSize == 0) return;          // if there's no packet, return
+
+  readMessage();
 }
