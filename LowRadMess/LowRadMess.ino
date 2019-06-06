@@ -1,13 +1,12 @@
 //TODO:
 //Encryption
-//Switch to multiple files as this will be a mess in a while.
 #include <LoRa.h> // include LoRa library
+#include "src/LoRaMess.h"
+
 //#define USE_DEBUG //Used for debugging stuff
 //#define EXPERIMENTAL //Use for enabling experimental features that have not been tested properly.
 #define Bluetooth Serial1
-byte localAddress = 0xBB;     // address of this device
-byte destination = 0xFF;      // destination to send to
-int messageCount = 0;
+
 
 void setup() {
   #ifndef EXPERIMENTAL
@@ -49,83 +48,16 @@ void loop() {
     while (Bluetooth.available()) {
       message += Bluetooth.readString();
     }
-if (messageCount < 5) { //A very very basic duty cycle limit without sense of time, Will have to rewrite it but it will do for now.
+
 #ifdef USE_DEBUG
     Serial.println("You: " + message);
 #endif
     Bluetooth.println("You: " + message);
 
     sendMessage(message);
-    }
 
-  else {
-    #ifdef USE_DEBUG
-        Serial.println("To honor the duty cycle the limit is 5 messages per day");
-    #endif
-        Bluetooth.println("To honor the duty cycle the limit is 5 messages per day");
-    }
   }
 
   // parse for a packet, and call onReceive with the result:
   onReceive(LoRa.parsePacket());
-}
-
-void readMessage() {
-  // read packet header bytes:
-  int recipient = LoRa.read();          // recipient address
-  byte sender = LoRa.read();            // sender address
-  byte incomingLength = LoRa.read();    // incoming msg length
-
-  String incoming = "";
-
-  // if the recipient isn't this device or broadcast,
-  //Needs much better implementation but it will do for now.
-  if (recipient != localAddress && recipient != destination) {
-
-#ifdef USE_DEBUG
-    Serial.println("This message is not for me.");
-#endif
-
-    return;                             // skip rest of function
-  }
-
-  while (LoRa.available()) {
-    incoming += (char)LoRa.read();
-  }
-
-  if (incomingLength != incoming.length()) {   // check length for error
-
-#ifdef USE_DEBUG
-    Serial.println("error: message length does not match length");
-#endif
-
-    return;                             // skip rest of function
-  }
-
-  // if message is for this device, or broadcast, print details:
-#ifdef USE_DEBUG
-  Serial.println("Received from: 0x" + String(sender, HEX));
-  Serial.println("Sent to: 0x" + String(recipient, HEX));
-  Serial.println("Message length: " + String(incomingLength));
-  Serial.println("Message: " + incoming);
-  Serial.println();
-#endif
-  Bluetooth.println("Message: " + incoming);
-  Bluetooth.println();
-}
-
-void sendMessage(String outgoing) {
-  LoRa.beginPacket();                   // start packet
-  LoRa.write(destination);              // add destination address
-  LoRa.write(localAddress);             // add sender address
-  LoRa.write(outgoing.length());        // add payload length
-  LoRa.print(outgoing);                 // add payload
-  LoRa.endPacket();                     // finish packet and send it
-  messageCount++;
-}
-
-void onReceive(int packetSize) {
-  if (packetSize == 0) return;          // if there's no packet, return
-
-  readMessage();
 }
