@@ -20,8 +20,7 @@ void setup() {
   while (!Serial);
   while (!Bluetooth);
 #ifdef EXPERIMENTAL
-Bluetooth.begin(9600);
-while (!Bluetooth);
+
 
 #else
   if (!LoRa.begin(866E6)) {    // initialize radio at 866 MHz
