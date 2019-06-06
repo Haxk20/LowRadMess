@@ -1,5 +1,5 @@
-#ifndef READMESSAGE
-  #define READMESSAGE
+#ifndef LORA
+  #define LORA
   #define Bluetooth Serial1
 extern byte localAddress; // = 0xBB;     // address of this device
 extern byte destination; // = 0xFF;      // destination to send to
