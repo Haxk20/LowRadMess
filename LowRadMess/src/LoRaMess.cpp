@@ -1,8 +1,12 @@
 #include <LoRa.h>
+#include <EEPROM.h>
 #include "LoRaMess.h"
 byte localAddress = 0xBB;
-byte destination = 0xFF;
+byte destination = 0xEB; //FliptheFlop and Kat named it like that.
 int messageCount = 0;
+int EEPROMadress = 0;
+bool ableToSend;
+
 void readMessage() {
   // read packet header bytes:
   int recipient = LoRa.read();          // recipient address
@@ -23,7 +27,7 @@ void readMessage() {
   }
 
   while (LoRa.available()) {
-    incoming += (char)LoRa.read();
+    incoming += (char)LoRa.read() - 100;
   }
 
   if (incomingLength != incoming.length()) {   // check length for error
@@ -48,6 +52,8 @@ void readMessage() {
 }
 
 void sendMessage(String outgoing) {
+  if (ableToSend) {
+  if (EEPROM.read(EEPROMadress) < 10) {
   LoRa.beginPacket();                   // start packet
   LoRa.write(destination);              // add destination address
   LoRa.write(localAddress);             // add sender address
@@ -55,6 +61,12 @@ void sendMessage(String outgoing) {
   LoRa.print(outgoing);                 // add payload
   LoRa.endPacket();                     // finish packet and send it
   messageCount++;
+  EEPROM.write(EEPROMadress, messageCount);
+}
+}
+else {
+  Bluetooth.println("You exceeded number of messages per day (10)");
+}
 }
 
 void onReceive(int packetSize) {
