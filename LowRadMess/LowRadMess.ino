@@ -1,7 +1,6 @@
 //TODO:
 //Encryption
 //Extend range (Mesh Network)
-//Duty Cycle
 #include <LoRa.h> // include LoRa library
 #include <EEPROM.h>
 #include <Wire.h>
