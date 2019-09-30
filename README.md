@@ -10,7 +10,7 @@ Simply connect the hardware according to the included scheme and upload the code
 
 ### You will need:
 - Arduino MEGA (Uno or lower will work but you cannot upload code while having Bluetooth powered)
-- Bluetooth module (HC05 or higher)
+- Bluetooth module (HC05 or higher. In the next version i will rewrite it to support higher bluetooth version as 2.0 is not good enough)
 - LoRa Module
 
 ### Libraries used:
